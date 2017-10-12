@@ -8,8 +8,12 @@ Dette **er**
 1. Liste
 1. Liste
 
+Litt tekst
+
 1. Liste
 1. Liste
+
+Enda litt mer tekst
 
 * Liste
 * Liste
