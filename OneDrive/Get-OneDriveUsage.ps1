@@ -1,6 +1,22 @@
-# Needed Modules
-#   Install-Module SharePointPnPPowerShellOnline
-#   Install-Module AzureAD
+#Info
+<#
+.SYNOPSIS
+List the path, owner and size of OneDrive for business sites
+
+.DESCRIPTION
+Check all licensed users that have and OneDrive for Business site.
+
+.NOTES
+To install needed modules
+  Install-Module SharePointPnPPowerShellOnline
+  Install-Module AzureAD
+
+Replace <TENANTNAME> in the begining of the script
+$urlbase = "https://<TENANTNAME>-my.sharepoint.com/personal/"
+$SPOService = "https://<TENANTNAME>-admin.sharepoint.com/"
+
+Author: Olav Tvedt
+#>
 
 $urlbase = "https://<TENANTNAME>-my.sharepoint.com/personal/"
 $SPOService = "https://<TENANTNAME>-admin.sharepoint.com/"
