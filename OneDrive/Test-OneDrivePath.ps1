@@ -10,20 +10,8 @@ https://support.microsoft.com/en-us/help/3125202/restrictions-and-limitations-wh
 https://support.microsoft.com/en-us/help/3034685/restrictions-and-limitations-when-you-sync-onedrive-for-business-files
 
 .NOTES
-Author: Johansen, Reidar (reidar.johansen@lumagate.com)
+Author: Johansen, Reidar (Reidar Johansen - Lumagate)
 Script Status: Production (Draft|Test|Production|Deprecated)
-
-History:
-Date	Version	Author	Category (NEW | CHANGE | DELETE | BUGFIX)	Description
-2017.09.13  1.20170913.1  Reidar  NEW  First release
-2017.09.21  1.20170921.1  Reidar  BUGFIX  Improved error handling on Get-ChildItem etc.
-2017.09.21  1.20170921.2  Reidar  CHANGE  Path variable no longer mandatory, defaults to current path
-2017.09.21  1.20170921.3  Reidar  CHANGE  Added Warning conditions
-2017.09.21  1.20170921.4  Reidar  CHANGE  Added ErrorsOnly switch
-2017.09.26  1.20170926.1  Olav    CHANGE  Filetypes updated and modified for Ignite give away
-2017.09.29  1.20170929.1  Reidar  CHANGE  Updated filetypes etc. to be in line with newer list of rules
-2018.01.10  1.20180110.1  Reidar  BUGFIX  Updated BlockedFileCharactersAndStrings, changed  .+$ to ^ .+$
-2018.01.11  1.20180111.1  Reidar  CHANGE  Added function Get-UserPermission and testing to check file/folder access
 
 .EXAMPLE
 PS C:\>.\Test-OneDrivePath.ps1 -Path 'H:\HomeDirs'
