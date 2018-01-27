@@ -1,21 +1,7 @@
 # Scripts For Sharing
 
-Dette _er_
+I am no coder, but I have some cool script I like to share.
+So I am using Github to have better solutions to share scripts to my blog https://olavtvedt.blogspot.com
 
-Dette **er**
-
-1. Liste
-1. Liste
-1. Liste
-
-Litt tekst
-
-1. Liste
-1. Liste
-
-Enda litt mer tekst
-
-* Liste
-* Liste
-    1. Liste
-    1. Liste
+Big thanks to Reidar Johansen https://twitter.com/reidartwitt helping me patiently. 
+I am more of an idea guy, he knows how to realize my often strange ideas
