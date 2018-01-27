@@ -10,11 +10,11 @@ https://support.microsoft.com/en-us/help/3125202/restrictions-and-limitations-wh
 https://support.microsoft.com/en-us/help/3034685/restrictions-and-limitations-when-you-sync-onedrive-for-business-files
 
 .NOTES
-Author: Johansen, Reidar
+Author: Johansen, Reidar (reidar.johansen@lumagate.com)
 Script Status: Production (Draft|Test|Production|Deprecated)
 
 History:
-Date    Version Author  Category (NEW | CHANGE | DELETE | BUGFIX)     Description
+Date	Version	Author	Category (NEW | CHANGE | DELETE | BUGFIX)	Description
 2017.09.13  1.20170913.1  Reidar  NEW  First release
 2017.09.21  1.20170921.1  Reidar  BUGFIX  Improved error handling on Get-ChildItem etc.
 2017.09.21  1.20170921.2  Reidar  CHANGE  Path variable no longer mandatory, defaults to current path
@@ -22,6 +22,8 @@ Date    Version Author  Category (NEW | CHANGE | DELETE | BUGFIX)     Descriptio
 2017.09.21  1.20170921.4  Reidar  CHANGE  Added ErrorsOnly switch
 2017.09.26  1.20170926.1  Olav    CHANGE  Filetypes updated and modified for Ignite give away
 2017.09.29  1.20170929.1  Reidar  CHANGE  Updated filetypes etc. to be in line with newer list of rules
+2018.01.10  1.20180110.1  Reidar  BUGFIX  Updated BlockedFileCharactersAndStrings, changed  .+$ to ^ .+$
+2018.01.11  1.20180111.1  Reidar  CHANGE  Added function Get-UserPermission and testing to check file/folder access
 
 .EXAMPLE
 PS C:\>.\Test-OneDrivePath.ps1 -Path 'H:\HomeDirs'
@@ -65,7 +67,7 @@ param
 (
   [Parameter(Mandatory=$false,ValueFromPipeline=$True,Position=0)]
   [string]$Path,
-  [string]$BlockedFileCharactersAndStrings='#|%|<|>|:|"|\/|\\|\||\?|\*| .+$|.+ $|^\.|\.$|^~|~\$|\._|^CON$|^PRN$|^AUX$|^NUL$|^COM[1-9]$|^LPT[1-9]$|^_vti_$',
+  [string]$BlockedFileCharactersAndStrings='#|%|<|>|:|"|\/|\\|\||\?|\*|^ .+$|.+ $|^\.|\.$|^~|~\$|\._|^CON$|^PRN$|^AUX$|^NUL$|^COM[1-9]$|^LPT[1-9]$|^_vti_$',
   [string]$BlockedFilePrefixesAndExtensions='\.ascx$|\.asmx$|\.aspx$|\.htc$|\.jar$|\.master$|\.swf$|\.xap$|\.xsf$|\.ashx$|\.json$|\.soap$|\.svc$|\.xamlx$|\.files$|\.one$|\.onepkg$|\.onetoc$|\.onetoc2$|_files$|_Dateien$|_fichiers$|_bestanden$|_file$|_archivos$|_filer$|_tiedostot$|_pliki$|_soubory$|_elemei$|_ficheiros$|_arquivos$|_dosyalar$|_datoteke$|_fitxers$|_failid$|_fails$|_bylos$|_fajlovi$|_fitxategiak$|\.laccdb$|\.tmp$|\.tpm$',
   [string]$InvalidFileTypes='^Thumbs\.db$|^EhThumbs\.db$|^Desktop\.ini$|^\.DS_Store$|^Icon$|^\.lock$',
   [string]$InvalidFoldernames='^_t$|^_w$|^_vti_$',
@@ -78,19 +80,21 @@ param
   [string]$OutFile,
   [switch]$OutGridView,
   [switch]$ErrorsOnly
-  )
+)
 #endregion Parameter
 Set-StrictMode -Version Latest;
 #region Variables
 #----------------------------------
 # Variables - can change if needed
 #----------------------------------
-[string]$scriptVersion='1.20170929.1';
+[string]$scriptVersion='1.20180111.1';
 
 #----------------------------------
 # Variables - do not change
 #----------------------------------
 $errorlist=@();
+[string]$scriptUser=[System.Security.Principal.WindowsIdentity]::GetCurrent().Name;
+[string]$scriptComputer=[System.Environment]::MachineName;
 if(-not($Path)){$Path=(Resolve-Path .\).Path;};
 $fileNumber=$folderNumber=$percent2Complete=0;
 $foldersinpath=@($($Path.Split('\'))|Where-Object{$_ -ne ''}).Count;
@@ -145,10 +149,57 @@ function Get-OutMessageFromError
     Get-OutMessage -Status $Status -Name $Name -IsFolder $IsFolder -FullName $fullname -Message $msg;
   };  
 };
+function Get-UserPermission
+{
+  [CmdletBinding()]
+  param
+  (
+    [Parameter(Mandatory=$true,Position=0)]
+    [ValidateNotNullOrEmpty()]
+    [ValidateScript({Test-Path -Path $_})]
+    [string]$Path
+  )
+  if(Test-Path -Path $Path -PathType Leaf)
+  {
+    try
+    {
+      $filetest=[System.IO.File]::Open($Path,'Open','ReadWrite','None');
+      $filetest.Close();
+      $filetest.Dispose();
+      'CanWrite';
+    }
+    catch
+    {
+      try
+      {
+        $filetest=[System.IO.File]::OpenRead($Path);
+        $filetest.Close();
+        $filetest.Dispose();
+        'CanRead';
+      }
+      catch
+      {
+        $_.Exception.Message;        
+      };
+    };
+  } else {
+    try
+    {
+      $null=[System.IO.Directory]::GetFileSystemEntries($Path);
+      'CanBrowse';
+    }
+    catch
+    {
+        $_.Exception.Message;        
+    };
+  };
+};
 #endregion Functions
 #region Main
 # Check that path is accessible
 if(-not(Test-Path -Path $Path -PathType Container)){throw "Path is not valid: $Path";};
+$pathtest=Get-UserPermission -Path $Path;
+if($pathtest -ne 'CanBrowse'){throw $pathtest;};
 # Get files in path
 $files=@(Get-ChildItem -Path $Path -Recurse -File -ErrorAction SilentlyContinue -ErrorVariable getfileerrors);
 # Check for errors during Get-ChildItem
@@ -180,10 +231,9 @@ foreach($file in $files)
   # File name paths should not be over 400 characters, we exclude root path
   $checkbasepath=$file.FullName.Replace($Path,'').Trim('\');
   if($checkbasepath.Length -gt $FilepathLengthLimit){$errorlist+=Get-OutMessage -Name $file.Name -FullName $file.FullName -Message "This file path use more than $FilepathLengthLimit characters. It has $($checkbasepath.Length) characters.";};
-  # Open files can't be synced
-  $test=$null;
-  $locked=try{$test=[System.IO.File]::Open($file.FullName,'Open','ReadWrite','None');}catch{$true;}finally{if($test){$test.Close();$test.Dispose();$false;};};
-  if($locked){$errorlist+=Get-OutMessage -Name $file.Name -FullName $file.FullName -Message 'This file is locked and cannot be synced.';};
+  # Only files with write permission and that is not open can be synced
+  $filepermission=Get-UserPermission -Path $file.FullName;
+  if($filepermission -ne 'CanWrite'){$errorlist+=Get-OutMessage -Name $file.Name -FullName $file.FullName -Message $filepermission;};
   # Calculate percentage completed for loop
   [int]$percent2Complete=if($numberoffiles){($fileNumber/$numberoffiles*100);}else{100;};
 };
@@ -202,6 +252,9 @@ foreach($folder in $folders)
   # Folder name paths should not be over 400 characters, we exclude root path
   $checkbasepath=$folder.FullName.Replace($Path,'').Trim('\');
   if($checkbasepath.Length -gt $FilepathLengthLimit){$errorlist+=Get-OutMessage -Name $folder.Name -FullName $folder.FullName -IsFolder $true -Message "This path is above the recommended limit of $FilepathLengthLimit characters. It has $($checkbasepath.Length) characters.";};
+  # Only browsable folders can be synced
+  $folderpermission=Get-UserPermission -Path $folder.FullName;
+  if($folderpermission -ne 'CanBrowse'){$errorlist+=Get-OutMessage -Name $folder.Name -FullName $folder.FullName -Message $folderpermission;};
   # Calculate percentage completed for loop
   [int]$percent2Complete=if($numberoffolders){($folderNumber/$numberoffolders*100);}else{100;};
 };
@@ -225,4 +278,3 @@ else
   $errorlist|Select-Object Status,Message,Name,FullName|Sort-Object Status,FullName;
 };
 #endregion Main
-
