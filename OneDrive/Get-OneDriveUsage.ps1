@@ -45,7 +45,7 @@ Hide the progress as the script runs.
 param
 (
   [Parameter(Mandatory=$true)]
-  $TenaneName,
+  [String]$TenaneName,
   [Parameter(Mandatory=$false,ValueFromPipeline=$false,Position=1)]
   [ValidateNotNull()]
   [System.Management.Automation.PSCredential]
@@ -56,7 +56,7 @@ param
   [switch]$OutConsole,
   [switch]$HideProgress
 )
-$urlbase = "https://$TenaneName-my.sharepoint.com/personal/",
+$urlbase = "https://$TenaneName-my.sharepoint.com/personal/"
 $SPOService = "https://$TenaneName-admin.sharepoint.com/"
 
 if($Credential -eq [System.Management.Automation.PSCredential]::Empty)
