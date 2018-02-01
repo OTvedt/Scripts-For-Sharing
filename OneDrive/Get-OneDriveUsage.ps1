@@ -35,6 +35,9 @@ Get usage from all users instead of only licensed users.
 .PARAMETER IncludeOnlyUnlicensedUsers
 Get all unlicensed users.
 
+.PARAMETER IncludeOnlyThisLicense
+Get only users with a specific license service plan, default is OFFICESUBSCRIPTION.
+
 .PARAMETER OutFile
 Specifies the location where the list should be saved. If not specified, result will be in a Grid View or Console.
 
@@ -60,6 +63,7 @@ param
   $Credential=[System.Management.Automation.PSCredential]::Empty,
   [switch]$IncludeAll,
   [switch]$IncludeOnlyUnlicensedUsers,
+  [string]$IncludeOnlyThisLicense='OFFICESUBSCRIPTION',
   [string]$OutFile,
   [switch]$OutGridView,
   [switch]$OutConsole,
@@ -89,6 +93,7 @@ $null=Connect-AzureAD -Credential $Credential
 $O365Users = Get-AzureADUser -All $true
 $numUsers = $O365Users.Count
 $i = 1
+$thisLicenseExist=$true
 $sites=@(foreach($O365User in $O365Users)
 {
   if(-not($HideProgress))
@@ -98,11 +103,18 @@ $sites=@(foreach($O365User in $O365Users)
   }
   if(($IncludeOnlyUnlicensedUsers -and -not($O365User.AssignedLicenses)) -or ($IncludeOnlyUnlicensedUsers -and $O365User.AssignedLicenses -and $O365User.AssignedLicenses.Count -eq 0) -or ($IncludeOnlyUnlicensedUsers -eq $false -and $O365User.AssignedLicenses -and $O365User.AssignedLicenses.Count -gt 0) -or $IncludeAll)
   {
-    $url=($($urlbase)+$($O365User.UserPrincipalName.Replace(".","_"))).Replace("@","_")
-    $site=Get-PnPTenantSite -Url $url -ErrorAction SilentlyContinue
-    if($site)
+    if($IncludeOnlyThisLicense)
     {
-      $site | Select-Object Title,Owner,Url,StorageUsage
+      $thisLicenseExist=@(Get-AzureADUserLicenseDetail -ObjectId $O365User.ObjectId|Select-Object -ExpandProperty ServicePlans|Where-Object{$_.ServicePlanName -eq $IncludeOnlyThisLicense}) -gt 0
+    }
+    if($thisLicenseExist)
+    {
+      $url=($($urlbase)+$($O365User.UserPrincipalName.Replace(".","_"))).Replace("@","_")
+      $site=Get-PnPTenantSite -Url $url -ErrorAction SilentlyContinue
+      if($site)
+      {
+        $site | Select-Object Title,Owner,Url,StorageUsage
+      }
     }
   }
   $i++
