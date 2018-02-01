@@ -96,7 +96,7 @@ $sites=@(foreach($O365User in $O365Users)
     # Output the result of reading the Sql table
     Write-Progress -Activity "Get OneDrive for usage" -CurrentOperation "User $i of $numUsers" -Id 1 -PercentComplete $percent1Complete -Status ("Working - $($percent1Complete)%");
   }
-  if(($IncludeOnlyUnlicensedUsers -and ($O365User.AssignedLicenses.Count -eq 0 -or $O365User.AssignedLicenses.Count -eq $null)) -or -not($IncludeOnlyUnlicensedUsers -eq $false -and ($O365User.AssignedLicenses.Count -ne 0 -or $IncludeAll))
+  if(($IncludeOnlyUnlicensedUsers -and -not($O365User.AssignedLicenses)) -or ($IncludeOnlyUnlicensedUsers -and $O365User.AssignedLicenses -and $O365User.AssignedLicenses.Count -eq 0) -or ($IncludeOnlyUnlicensedUsers -eq $false -and $O365User.AssignedLicenses -and $O365User.AssignedLicenses.Count -gt 0) -or $IncludeAll)
   {
     $url=($($urlbase)+$($O365User.UserPrincipalName.Replace(".","_"))).Replace("@","_")
     $site=Get-PnPTenantSite -Url $url -ErrorAction SilentlyContinue
