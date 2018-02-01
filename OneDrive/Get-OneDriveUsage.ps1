@@ -1,7 +1,7 @@
 #Info
 <#
 .SYNOPSIS
-List the path, owner and size of OneDrive for business sites
+List the path, owner and size of OneDrive for business sites. Licensed users only
 
 .DESCRIPTION
 Check all licensed users that have and OneDrive for Business site.
