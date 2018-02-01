@@ -29,6 +29,12 @@ Specifies the Tenant name of your organization's SPO service.
 .PARAMETER Credential
 Specifies the User account for an Office 365 global admin in your organization.
 
+.PARAMETER IncludeAll
+Get usage from all users instead of only licensed users.
+
+.PARAMETER IncludeOnlyUnlicensedUsers
+Get all unlicensed users.
+
 .PARAMETER OutFile
 Specifies the location where the list should be saved. If not specified, result will be in a Grid View or Console.
 
@@ -52,6 +58,8 @@ param
   [System.Management.Automation.PSCredential]
   [System.Management.Automation.Credential()]
   $Credential=[System.Management.Automation.PSCredential]::Empty,
+  [switch]$IncludeAll,
+  [switch]$IncludeOnlyUnlicensedUsers,
   [string]$OutFile,
   [switch]$OutGridView,
   [switch]$OutConsole,
@@ -88,7 +96,7 @@ $sites=@(foreach($O365User in $O365Users)
     # Output the result of reading the Sql table
     Write-Progress -Activity "Get OneDrive for usage" -CurrentOperation "User $i of $numUsers" -Id 1 -PercentComplete $percent1Complete -Status ("Working - $($percent1Complete)%");
   }
-  if($O365User.AssignedLicenses.Count -ne 0)
+  if(($IncludeOnlyUnlicensedUsers -and ($O365User.AssignedLicenses.Count -eq 0 -or $O365User.AssignedLicenses.Count -eq $null)) -or -not($IncludeOnlyUnlicensedUsers -eq $false -and ($O365User.AssignedLicenses.Count -ne 0 -or $IncludeAll))
   {
     $url=($($urlbase)+$($O365User.UserPrincipalName.Replace(".","_"))).Replace("@","_")
     $site=Get-PnPTenantSite -Url $url -ErrorAction SilentlyContinue
