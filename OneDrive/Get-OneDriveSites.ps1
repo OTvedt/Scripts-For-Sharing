@@ -1,7 +1,7 @@
 #region Header
 <#
 .SYNOPSIS
-Get list of OneDrive for Business sites in a tenant
+Get list of OneDrive for Business sites in a tenant. All Included deleted in retention users
 
 .DESCRIPTION
 Get list of OneDrive for Business sites in a tenant
