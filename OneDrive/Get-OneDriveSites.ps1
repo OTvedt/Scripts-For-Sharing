@@ -56,7 +56,7 @@ param
 (
   [Parameter(Mandatory=$false)]
   [ValidateNotNullOrEmpty()]
-  [string]$TenantName='M365x444564', # Please change this to your tennant name or add it as a parameter -TenantName 'Contoso'
+  [string]$TenantName='', # Please change this to your tenant name or add it as a parameter -TenantName 'Contoso'
   [Parameter(Mandatory=$false,ValueFromPipeline=$false,Position=1)]
   [ValidateNotNull()]
   [System.Management.Automation.PSCredential]
@@ -132,7 +132,7 @@ if($userProfileService)
         {
           $userName=$Prop.Values[0].Value
         }
-        New-Object â€“TypeName PSObject -Property (@{'PersonalSpace'=$personalSpace; 'UserName'=$userName})
+        New-Object -TypeName PSObject -Property (@{'PersonalSpace'=$personalSpace; 'UserName'=$userName})
       }
 
       # And now we check the next profile the same way...
