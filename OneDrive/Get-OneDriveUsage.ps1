@@ -35,6 +35,9 @@ Get usage from all users instead of only licensed users.
 .PARAMETER IncludeOnlyUnlicensedUsers
 Get all unlicensed users.
 
+.PARAMETER IncludeOnlyThisLicense
+Get only users with a specific license service plan, default is OFFICESUBSCRIPTION.
+
 .PARAMETER OutFile
 Specifies the location where the list should be saved. If not specified, result will be in a Grid View or Console.
 
@@ -58,8 +61,11 @@ param
   [System.Management.Automation.PSCredential]
   [System.Management.Automation.Credential()]
   $Credential=[System.Management.Automation.PSCredential]::Empty,
+  [Parameter(ParameterSetName='All')]
   [switch]$IncludeAll,
+  [Parameter(ParameterSetName='Unlicensed')]
   [switch]$IncludeOnlyUnlicensedUsers,
+  [string]$IncludeOnlyThisLicense='OFFICESUBSCRIPTION',
   [string]$OutFile,
   [switch]$OutGridView,
   [switch]$OutConsole,
@@ -67,7 +73,6 @@ param
 )
 $urlbase = "https://$TenantName-my.sharepoint.com/personal/"
 $SPOService = "https://$TenantName-admin.sharepoint.com/"
-
 if($Credential -eq [System.Management.Automation.PSCredential]::Empty)
 {
   $Credential=Get-Credential
@@ -98,11 +103,30 @@ $sites=@(foreach($O365User in $O365Users)
   }
   if(($IncludeOnlyUnlicensedUsers -and -not($O365User.AssignedLicenses)) -or ($IncludeOnlyUnlicensedUsers -and $O365User.AssignedLicenses -and $O365User.AssignedLicenses.Count -eq 0) -or ($IncludeOnlyUnlicensedUsers -eq $false -and $O365User.AssignedLicenses -and $O365User.AssignedLicenses.Count -gt 0) -or $IncludeAll)
   {
-    $url=($($urlbase)+$($O365User.UserPrincipalName.Replace(".","_"))).Replace("@","_")
-    $site=Get-PnPTenantSite -Url $url -ErrorAction SilentlyContinue
-    if($site)
+    $thisLicenseExist=if($IncludeOnlyThisLicense)
     {
-      $site | Select-Object Title,Owner,Url,StorageUsage
+      $retVal=$false
+      $thisLic=Get-AzureADUserLicenseDetail -ObjectId $O365User.ObjectId
+      if($thisLic)
+      {
+        foreach($plan in $thisLic.ServicePlans)
+        {
+          if($plan.ServicePlanName -eq $IncludeOnlyThisLicense)
+          {
+            $retVal=$true
+          }
+        }
+      }
+      $retVal
+    } else {$true}
+    if($thisLicenseExist)
+    {
+      $url=($($urlbase)+$($O365User.UserPrincipalName.Replace(".","_"))).Replace("@","_")
+      $site=Get-PnPTenantSite -Url $url -ErrorAction SilentlyContinue
+      if($site)
+      {
+        $site | Select-Object Title,Owner,Url,StorageUsage
+      }
     }
   }
   $i++
