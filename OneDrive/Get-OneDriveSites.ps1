@@ -4,7 +4,7 @@
 Get list of OneDrive for Business sites in a tenant
 
 .DESCRIPTION
-Get list of OneDrive for Business sites in a tenant. Also those without a license currently assigned
+Get list of OneDrive for Business sites in a tenant
 
 .NOTES
 Author: Tvedt, Olav (olav.tvedt@lumagate.com)
@@ -12,21 +12,23 @@ Script Status: Production (Draft|Test|Production|Deprecated)
 
 History:
 Date    Version    Author    Category (NEW | CHANGE | DELETE | BUGFIX)    Description
-2018.02.01  1.20180201.1  Olav    NEW  First release
+2018.01.18  1.20180118.1  Olav    NEW  First release
+2018.01.29  1.20180129.1  Olav    CHANGE Bugfixes and new features
+
 
 .EXAMPLE
 PS C:\>$Credential=Get-Credential
-PS C:\>.\Get-OneDrive4BSites.ps1 -Tenant 'contoso' -Credential $Credential
+PS C:\>.\Get-OneDrive4BSites.ps1 -AdminURI 'https://contoso-admin.sharepoint.com' -Credential $Credential
 
-This example output the result to consoleget
+This example output the result to console
 
 .EXAMPLE
-PS C:\>.\Get-OneDrive4BSites.ps1 -Tenant 'contoso' -Credential $Credential -OutFile 'C:\Temp\OD4BSites.txt'
+PS C:\>.\Get-OneDrive4BSites.ps1 -AdminURI 'https://contoso-admin.sharepoint.com' -Credential $Credential -OutFile 'C:\Temp\OD4BSites.txt'
 
 This example output the result to a log file
 
 .EXAMPLE
-PS C:\>.\Get-OneDrive4BSites.ps1 -Tenant 'contoso' -OutGridView
+PS C:\>.\Get-OneDrive4BSites.ps1 -AdminURI 'https://contoso-admin.sharepoint.com' -OutGridView
 
 This example output the result to Grid View and asks for credentials
 
@@ -54,7 +56,7 @@ param
 (
   [Parameter(Mandatory=$false)]
   [ValidateNotNullOrEmpty()]
-  [string]$TenantName='Contoso', # Please change this to your tennant name or add it as a parameter -TenantName 'Contoso'
+  [string]$TenantName='M365x444564', # Please change this to your tennant name or add it as a parameter -TenantName 'Contoso'
   [Parameter(Mandatory=$false,ValueFromPipeline=$false,Position=1)]
   [ValidateNotNull()]
   [System.Management.Automation.PSCredential]
@@ -130,7 +132,7 @@ if($userProfileService)
         {
           $userName=$Prop.Values[0].Value
         }
-        New-Object –TypeName PSObject -Property (@{'PersonalSpace'=$personalSpace; 'UserName'=$userName})
+        New-Object â€“TypeName PSObject -Property (@{'PersonalSpace'=$personalSpace; 'UserName'=$userName})
       }
 
       # And now we check the next profile the same way...
