@@ -67,6 +67,7 @@ param
   [switch]$IncludeAll,
   [Parameter(ParameterSetName='Unlicensed')]
   [switch]$IncludeOnlyUnlicensedUsers,
+  [Parameter(ParameterSetName='Licensed')]
   [string]$IncludeOnlyThisLicense='OFFICESUBSCRIPTION',
   [string]$OutFile,
   [switch]$OutGridView,
