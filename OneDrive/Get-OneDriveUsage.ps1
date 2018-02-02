@@ -76,6 +76,7 @@ param
 )
 $urlbase = "https://$TenantName-my.sharepoint.com/personal/"
 $SPOService = "https://$TenantName-admin.sharepoint.com/"
+if($PSCmdlet.ParameterSetName -ne 'Licensed'){$IncludeOnlyThisLicense=''}
 if($Credential -eq [System.Management.Automation.PSCredential]::Empty)
 {
   $Credential=Get-Credential
