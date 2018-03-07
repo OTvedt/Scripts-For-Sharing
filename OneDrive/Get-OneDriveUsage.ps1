@@ -50,7 +50,7 @@ Output result to Console.
 .PARAMETER HideProgress
 Hide the progress as the script runs.
 #>
-[CmdletBinding()]
+[CmdletBinding(DefaultParameterSetName='Licensed')]
 param
 (
   [Parameter(Mandatory=$false)]
@@ -61,10 +61,13 @@ param
   [System.Management.Automation.PSCredential]
   [System.Management.Automation.Credential()]
   $Credential=[System.Management.Automation.PSCredential]::Empty,
+  [Parameter(ParameterSetName='Licensed')]
+  [switch]$IncludeLicensed,
   [Parameter(ParameterSetName='All')]
   [switch]$IncludeAll,
   [Parameter(ParameterSetName='Unlicensed')]
   [switch]$IncludeOnlyUnlicensedUsers,
+  [Parameter(ParameterSetName='Licensed')]
   [string]$IncludeOnlyThisLicense='OFFICESUBSCRIPTION',
   [string]$OutFile,
   [switch]$OutGridView,
@@ -73,6 +76,7 @@ param
 )
 $urlbase = "https://$TenantName-my.sharepoint.com/personal/"
 $SPOService = "https://$TenantName-admin.sharepoint.com/"
+if($PSCmdlet.ParameterSetName -ne 'Licensed'){$IncludeOnlyThisLicense=''}
 if($Credential -eq [System.Management.Automation.PSCredential]::Empty)
 {
   $Credential=Get-Credential
@@ -81,6 +85,12 @@ if($Credential -eq [System.Management.Automation.PSCredential]::Empty)
 Import-Module SharepointPnPPowerShellOnline -WarningAction SilentlyContinue
 Import-Module AzureAD
 
+$checkCommand=Get-Command Connect-PnPOnline -ErrorAction SilentlyContinue
+if(-not($checkCommand)){throw 'SharepointPnPPowerShellOnline module not properly installed'}
+
+$checkCommand=Get-Command Connect-AzureAD -ErrorAction SilentlyContinue
+if(-not($checkCommand)){throw 'AzureAD module not properly installed'}
+
 # Show progress
 $percent1Complete=0
 if(-not($HideProgress))
@@ -88,8 +98,10 @@ if(-not($HideProgress))
     Write-Progress -Activity "Get OneDrive for usage" -CurrentOperation "Connecting" -Id 1 -PercentComplete $percent1Complete -Status ("Working - $($percent1Complete)%");
 }
 
-$null=Connect-PnPOnline -Url $SPOService -Credential $Credential
-$null=Connect-AzureAD -Credential $Credential
+$pnpOnline=Connect-PnPOnline -Url $SPOService -Credential $Credential -ReturnConnection
+if(-not($pnpOnline.ConnectionType -eq 'TenantAdmin')){throw 'Unable to connect to PnP Online'}
+$azureAD=Connect-AzureAD -Credential $Credential
+if(-not($azureAD.Tenant)){throw 'Unable to connect to AzureAD'}
 
 $O365Users = Get-AzureADUser -All $true
 $numUsers = $O365Users.Count
