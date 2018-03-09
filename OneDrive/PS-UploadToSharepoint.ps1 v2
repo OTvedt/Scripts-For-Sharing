@@ -1,0 +1,51 @@
+[CmdletBinding()]
+Param
+(
+[switch]$CleanFirst,
+[switch]$CleanOnly,
+#Change values according to you environement
+$User = 'admin@<TENANTNAME>.onmicrosoft.com',
+$SourceFiles = '\\FileServer01\Share\Files',
+$TempPath = 'C:\OneDrive-PSMigration\',
+$TargetWeb = 'https://<TENANTNAME>-my.sharepoint.com/personal/admin_<TENANTNAME>_onmicrosoft_com',
+$TargetDocLib = 'Documents’
+)
+Set-StrictMode -Version Latest
+$SourcePackage = 'Temp-Pkg'
+$SourcPath = Join-Path -Path $TempPath -ChildPath $SourcePackage
+$TargetPackage = 'Final-Pkg'
+$TargetPath = Join-Path -Path $TempPath -ChildPath $TargetPackage
+
+if($CleanOnly)
+{
+  if(Test-Path -Path $TempPath -PathType Container)
+  {
+    Remove-Item -Path $TempPath -Recurse -Force
+  }
+  Exit
+}
+
+if (Test-Path -Path $SourceFiles -PathType Container)
+{
+  #[System.Windows.MessageBox]::Show('SourceFiles in path: '+ $SourceFiles+' is not accessable')
+  Write-Host $([char]10+'SourceFiles in path: '+$SourceFiles+' is not accessible'+[char]10) -ForegroundColor Black -BackgroundColor White
+  Exit
+}
+
+if($CleanFirst)
+{
+  if (-Not (Test-Path -Path $TempPath -PathType Container))
+  {
+    Remove-Item -Path $TempPath -Recurse -Force
+  }
+}
+
+if(-not(Test-Path -Path $SourceFiles -PathType Container))
+{
+  New-Item -Path $TempPath -ItemType Directory -Force
+}
+
+$Cred = (Get-Credential $User)
+New-SPOMigrationPackage -SourceFilesPath $sourceFiles -OutputPackagePath $SourcPath -TargetWebUrl $targetWeb -TargetDocumentLibraryPath $targetDocLib -IgnoreHidden –ReplaceInvalidCharacters 
+$finalPackages = ConvertTo-SPOMigrationTargetedPackage -ParallelImport -SourceFilesPath $sourceFiles -SourcePackagePath $SourcPath -OutputPackagePath $TargetPath -Credentials $cred -TargetWebUrl $targetWeb -TargetDocumentLibraryPath $targetDocLib 
+$jobs = $finalPackages | % {Invoke-SPOMigrationEncryptUploadSubmit -SourceFilesPath $_.FilesDirectory.FullName -SourcePackagePath $_.PackageDirectory.FullName -Credentials $cred -TargetWebUrl $targetWeb}
