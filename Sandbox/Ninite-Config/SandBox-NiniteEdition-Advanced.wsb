@@ -1,0 +1,13 @@
+<Configuration>
+<VGpu>Disable</VGpu>
+<Networking>Enable</Networking>
+<MappedFolders>
+<MappedFolder>
+<HostFolder>C:\Users\olav\OneDrive\Presentasjoner\2019\Ignite\Tools\Sandbox\Ninite</HostFolder>
+<ReadOnly>false</ReadOnly>
+</MappedFolder>
+</MappedFolders>
+<LogonCommand>
+<Command>explorer.exe C:\Users\WDAGUtilityAccount\Desktop\Ninite\Prep.cmd</Command>
+</LogonCommand>
+</Configuration>
