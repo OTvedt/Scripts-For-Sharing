@@ -1,0 +1,13 @@
+<Configuration>
+<VGpu>Disable</VGpu>
+<Networking>Enable</Networking>
+<MappedFolders>
+<MappedFolder>
+<HostFolder>C:\Users\olav\OneDrive\Tools\Sandbox\Chocolatey</HostFolder>
+<ReadOnly>false</ReadOnly>
+</MappedFolder>
+</MappedFolders>
+<LogonCommand>
+<Command>explorer.exe C:\Users\WDAGUtilityAccount\Desktop\Chocolatey\Prep.cmd</Command>
+</LogonCommand>
+</Configuration>
