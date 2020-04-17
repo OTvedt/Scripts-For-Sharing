@@ -1,0 +1,3 @@
+#Delete comments and save as ResourceGroup-Input.csv. Using ; as seperator
+#Header/format c1=Subscription;c2=Resource group name;c3=Tag-Owner;c4=Tag-application;c5=Role-Read;c6=Role-Contributor
+prod-sub-01;New-RG-Prod01;Team-AppDev;New-App;AppMonitor-Admins;AppDev-Admins
