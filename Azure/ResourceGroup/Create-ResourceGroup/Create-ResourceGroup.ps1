@@ -3,7 +3,7 @@
 #Install-Module -Name Az
 
 $FilePath = "C:\PowerShell\Azure\ResourceGroups\" #Path to csv file
-$CsvName = "ResourceGroup-Input-DigitalBank02.csv" # Name of csv file
+$CsvName = "ResourceGroup-Input.csv" # Name of csv file
 $Csv = $FilePath + $CsvName
 $csvItems = import-csv $Csv -Header c1,c2,c3,c4,c5,c6 -Delimiter ';'  #c1=Subscription,c2=Resource group name,c3=Tag-Owner,c4=Tag-application,c5=Role-Read,c6=Role-Contributor
 $MyLocation = "westeurope"
