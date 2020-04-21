@@ -1,1 +1,3 @@
-
+Check after Azure Resource Groups without any content
+It will check all subscriptions except does with Visual Studio or Free in the name
+Output are also checking for Tags Owner/owner and Application/Application since in my environment that will give valuable info  
