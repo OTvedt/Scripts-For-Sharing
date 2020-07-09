@@ -1,0 +1,10 @@
+Connect-AzureAD
+$TennantID = Get-AzureADTenantDetail | Select-Object -ExpandProperty ObjectId 
+$RoleID = Get-AzureADMSPrivilegedRoleDefinition -ProviderId aadRoles -ResourceId $TennantID | Where-Object {$_.DisplayName -Match 'Global Administrator'} | Select-Object -ExpandProperty Id
+$UserName = whoami.exe /UPN #Or add upn name of user like "Dem.Olav@tvedt.one"
+$UserID = Get-AzureADUser -ObjectId $UserName | Select-Object  -ExpandProperty ObjectId
+$schedule = New-Object Microsoft.Open.MSGraph.Model.AzureADMSPrivilegedSchedule
+                  $schedule.Type = "Once"
+                  $schedule.Duration="PT4H" #Change number 4 to the number of hourse wanted
+                  $schedule.StartDateTime = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ")
+Open-AzureADMSPrivilegedRoleAssignmentRequest -ProviderId 'aadRoles' -ResourceId $TennantID -RoleDefinitionId $RoleID -SubjectId $UserID -Type 'UserAdd' -Schedule $schedule -AssignmentState 'Active' -reason "Tester from Powershell"
