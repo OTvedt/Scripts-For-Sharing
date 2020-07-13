@@ -1,3 +1,5 @@
+# REquirement: AzureADPreview (Install-Module -Name AzureADPreview -AllowClobber)
+
 Connect-AzureAD
 $TennantID = Get-AzureADTenantDetail | Select-Object -ExpandProperty ObjectId 
 $RoleID = Get-AzureADMSPrivilegedRoleDefinition -ProviderId aadRoles -ResourceId $TennantID | Where-Object {$_.DisplayName -Match 'Global Administrator'} | Select-Object -ExpandProperty Id
