@@ -6,7 +6,7 @@ ForEach ($U in $Users) {
       $UserLastLogonDate = $Null
       Try {
          $UserObjectId = $U.ObjectId
-         $UserLastLogonDate = (Get-AzureADAuditSignInLogs -Top 3  -Filter "userid eq '$UserObjectId' and status/errorCode eq 0").CreatedDateTime }
+         $UserLastLogonDate = (Get-AzureADAuditSignInLogs -Top 1  -Filter "userid eq '$UserObjectId' and status/errorCode eq 0").CreatedDateTime }
       Catch {
          Write-Host "Can't read Azure Active Directory Sign in Logs"`n }
       If ($UserLastLogonDate -ne $Null) {
