@@ -11,8 +11,12 @@
         <HostFolder>C:\Users\olavt\OneDrive\Tools\SandBox\Chocolatey2</HostFolder>
 		<ReadOnly>false</ReadOnly>
 	</MappedFolder>
+    <MappedFolder>
+        <HostFolder>C:\Temp</HostFolder>
+		<ReadOnly>true</ReadOnly>
+	</MappedFolder>
 </MappedFolders>
 <LogonCommand>
-    <Command>explorer.exe C:\Users\WDAGUtilityAccount\Desktop\Chocolatey2\Prep.cmd</Command>
+    <Command>C:\Users\WDAGUtilityAccount\Desktop\Temp\Tools\TeamViewerPortable15\TeamViewer.exe</Command>
 </LogonCommand>
 </Configuration>
