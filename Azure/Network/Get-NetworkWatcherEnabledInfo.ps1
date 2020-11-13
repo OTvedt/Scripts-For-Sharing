@@ -2,7 +2,7 @@
 Connect-AzAccount # -Tenant xxxxxxx 
 Get-AzTenant
 Get-AzContext
-$AllSubs = get-AzSubscription | Where-Object { $_.Name -NotMatch 'Visual Studio' -and $_.Name -NotMatch 'Prøv gratis' -and $_.Name -NotMatch 'Tilgang til Azure Active Directory' -and $_.Name -NotMatch 'HaraldVS' }
+$AllSubs = get-AzSubscription | Where-Object { $_.Name -NotMatch 'Visual Studio' -and $_.Name -NotMatch 'Free' }
 $CollectionAll = @(
   Foreach ($Sub in $AllSubs) {
     $AzSub = Select-AzSubscription -Subscription $Sub.Id -ErrorAction SilentlyContinue -WarningAction SilentlyContinue # -Tenant xxxxxxxxxxxxxxx
