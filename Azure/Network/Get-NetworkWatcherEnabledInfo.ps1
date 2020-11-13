@@ -1,4 +1,3 @@
-﻿# Install-Module Az.Network -Scope CurrentUser -Force
 Connect-AzAccount # -Tenant xxxxxxx 
 $AllSubs = get-AzSubscription | Where-Object { $_.Name -NotMatch 'Visual Studio' -and $_.Name -NotMatch 'Free' }
 $CollectionAll = @(
