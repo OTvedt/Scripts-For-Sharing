@@ -14,4 +14,4 @@ $CollectionAll = @(
     }
   }
 )
-$CollectionAll | Select-Object -Property Subscription, NetworkWatcherLocation | Sort-Object -Property Subscription, NetworkWatcherLocation | FT
+$CollectionAll | Select-Object -Property Subscription, NetworkWatcherLocation | Sort-Object -Property Subscription, NetworkWatcherLocation | Format-Table
