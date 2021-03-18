@@ -52,7 +52,7 @@ do
         } '4' {
             Clear-Host
             'You chose Teams Administrator'
-            $RoleID = Get-AzureADMSPrivilegedRoleDefinition -ProviderId aadRoles -ResourceId $TennantID | Where-Object {$_.DisplayName -Match 'Teams Service Administrator'} | Select-Object -ExpandProperty Id
+            $RoleID = Get-AzureADMSPrivilegedRoleDefinition -ProviderId aadRoles -ResourceId $TennantID | Where-Object {$_.DisplayName -Match 'Teams Administrator'} | Select-Object -ExpandProperty Id
             Open-AzureADMSPrivilegedRoleAssignmentRequest -ProviderId 'aadRoles' -ResourceId $TennantID -RoleDefinitionId $RoleID -SubjectId $UserID -Type 'UserAdd' -Schedule $schedule -AssignmentState 'Active' -reason "Request from Powershell"
         } '5' {
             Clear-Host
