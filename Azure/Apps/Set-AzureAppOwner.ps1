@@ -10,5 +10,4 @@ ForEach ($App in $Applist) {
     
     $AppName = (Get-AzureADApplication -Filter "DisplayName eq '$App'")
     Add-AzureADApplicationOwner -ObjectId $AppName.ObjectId -RefObjectId $Owner.ObjectId
-    echo $AppName
 }
