@@ -1,0 +1,1 @@
+Have split the PIM scripts into folders realted to where they are being used.
