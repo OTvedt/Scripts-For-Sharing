@@ -1,1 +1,0 @@
-Collection of scripts related to Azure resources Privileged Identity Management
