@@ -23,6 +23,7 @@ ForEach ($sub in $Subs) {
             {
                 "*resourcegroup*" { $type = "ResourceGroup" }
                 "*managementgroup*" { $type = "ManagementGroup" }
+                "*providers*" {$type = "Providers"}
                 Default { $type = "Subscription" }
             }
 
