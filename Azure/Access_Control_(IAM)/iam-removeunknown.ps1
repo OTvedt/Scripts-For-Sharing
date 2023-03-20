@@ -1,6 +1,6 @@
-# Goes trough all subscriptions (with some exeptions) looking for Unknowns.
-# Unknowns are usally removed groups and users that no longer exist, but it can also be guest invitations that have not (yet) been connected/accepted
-# Documents all findings in csv file, removes the unknowns and documents whats have been removed on all subscriptions in a text file in the end
+# Goes through all subscriptions (with some exceptions) looking for Unknowns.
+# Unknowns are usually removed groups and users that no longer exist, but they can also be guest invitations that have not (yet) been connected/accepted
+# Documents all findings in a CSV file, remove the unknowns and documents what has been removed on all subscriptions in a text file at the end
 
 $Subs = Get-AzSubscription | Where-Object { $_.Name -NotMatch 'Visual Studio' -and $_.Name -NotMatch 'Free' -and $_.Name -notmatch 'Access to Azure Active Directory'}
 $All = @()
