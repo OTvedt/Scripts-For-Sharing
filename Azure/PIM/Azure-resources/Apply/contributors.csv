@@ -1,0 +1,5 @@
+# This file should only contain the Group/User and the path to the resource that the group shall have access. No header
+# The information needed can be found by using the script "DocumentAllSubsAIM.ps1", this can be modified to collect only these values
+ContributorGroup1;/subscriptions/{Add your subscriptionID here}/resourceGroups/rg-for-pimtest01
+ContributorGroup1;/subscriptions/{Add your subscriptionID here}/resourceGroups/rg-for-pimtest02
+ContributorGroup1;/subscriptions/{Add your subscriptionID here}/resourceGroups/rg-for-pimtest02
