@@ -1,7 +1,7 @@
 # A script that collect all used roles for your Azure resources and create an inventory for 1 named subscriptions (Change the $Subs = value)
 # It creates a file
 
-Connect-AzureAD
+Connect-AzAccount
 
 $Subs = "<Your Subscription name>"
 Set-AzContext -SubscriptionName $subs
