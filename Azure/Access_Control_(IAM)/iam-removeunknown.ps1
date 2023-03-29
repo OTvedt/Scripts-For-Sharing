@@ -1,6 +1,7 @@
 # Goes through all subscriptions (with some exceptions) looking for Unknowns.
 # Unknowns are usually removed groups and users that no longer exist, but they can also be guest invitations that have not (yet) been connected/accepted
 # Documents all findings in a CSV file, remove the unknowns and documents what has been removed on all subscriptions in a text file at the end
+# Remove/Comment out the "Remove-AzRoleAssignment" line to prevent changes to be made
 
 $Subs = Get-AzSubscription | Where-Object { $_.Name -NotMatch 'Visual Studio' -and $_.Name -NotMatch 'Free' -and $_.Name -notmatch 'Access to Azure Active Directory'}
 $All = @()
@@ -16,7 +17,7 @@ ForEach ($sub in $Subs) {
             $object = $entry.ObjectId
             $roledef = $entry.RoleDefinitionName
             $rolescope = $entry.Scope
-            Remove-AzRoleAssignment -ObjectId $object -RoleDefinitionName $roledef -Scope $rolescope -outvariable res
+            Remove-AzRoleAssignment -ObjectId $object -RoleDefinitionName $roledef -Scope $rolescope -outvariable res # Comment out this line for only search and no removal
             $All = $All +$res
         }       
     }
