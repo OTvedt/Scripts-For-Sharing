@@ -1,6 +1,5 @@
 # This will crawl throug all Azure subscriptions to find the Roles that are in use and document it into a csv file
-$me = whoami -upn
-Connect-AzureAD -AccountId $me 
+Connect-AzAccount
 $Subs = Get-AzSubscription | Where-Object { $_.Name -NotMatch 'Visual Studio' -and $_.Name -NotMatch 'Free' }
 
 ForEach ($Sub in $subs) {
