@@ -10,7 +10,6 @@ ForEach ($Item in $csvItems) {
     $Path = $Item.Path
     $guid = New-Guid
     $startTime = Get-Date -Format o 
-    $User = Get-AzADGroup -DisplayName 'G_Systemutvikling_TeamBM'
     $Runs++
     try {
         write  $Path $Group.DisplayName
