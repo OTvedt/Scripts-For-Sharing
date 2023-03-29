@@ -1,8 +1,7 @@
 # A script that collect all used roles for your Azure resources (Not Azure AD roles) and create an inventory of the use in all subscriptions.
 # It excludes some subscriptons like Visual Studio etc. and creates one file for each subscription and one common for all subscriptions
 
-Connect-AzureAD
-
+Connect-AzAccount
 $Subs = Get-AzSubscription | Where-Object { $_.Name -NotMatch 'Visual Studio' -and $_.Name -NotMatch 'Access to Azure Active Directory' }
 $All = @()
 
