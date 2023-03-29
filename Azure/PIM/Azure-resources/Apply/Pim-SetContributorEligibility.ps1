@@ -12,7 +12,7 @@ ForEach ($Item in $csvItems) {
     $startTime = Get-Date -Format o 
     $Runs++
     try {
-        write  $Path $Group.DisplayName
+        write $Group.DisplayName  $Path
         New-AzRoleEligibilityScheduleRequest -Name $guid -Scope $Path  -ExpirationType 'NoExpiration' -ExpirationDuration 'PT8H' -PrincipalId $Group.Id -RequestType AdminAssign -RoleDefinitionId $Roledef -ScheduleInfoStartDateTime $startTime
         Remove-AzRoleAssignment -Scope $Path -ObjectId $Group.Id -RoleDefinitionName Contributor
         Write-Output "$Runs of $($csvItems.count)"
