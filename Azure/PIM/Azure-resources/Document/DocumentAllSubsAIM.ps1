@@ -4,7 +4,6 @@
 Connect-AzureAD
 
 $Subs = Get-AzSubscription | Where-Object { $_.Name -NotMatch 'Visual Studio' -and $_.Name -NotMatch 'Access to Azure Active Directory' }
-$RunTime = (Get-Date).ToString('dd.MM.yyyy-hh-mm')
 $All = @()
 
 ForEach ($sub in $Subs) {
@@ -42,4 +41,5 @@ ForEach ($sub in $Subs) {
 
 }  
 
-$All | Export-Csv -Encoding UTF8 -Path "c:\Temp\PIM\Allsubs-Roles-$RunTime.csv" -Delimiter ';' -NoTypeInformation -Append
+$All | Export-Csv -Encoding UTF8 -Path "c:\Temp\PIM\Allsubs-Roles-$((Get-Date).ToString('dd.MM.yyyy-hh-mm')).csv" -Delimiter ';' -NoTypeInformation -Append
+$All | Where-Object {$_.Type -eq 'ResourceGroup' -and $_.ObjectType -eq 'Group' -and ($_.RoleDefinitionName -eq 'Owner' -or $_.RoleDefinitionName -eq 'Contributor')}  |Export-Csv -Encoding UTF8 -Path "c:\Temp\PIM\RGsNeedsModification-$((Get-Date).ToString('dd.MM.yyyy-hh-mm')).csv" -Delimiter ';' -NoTypeInformation -Append
