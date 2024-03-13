@@ -1,3 +1,21 @@
+<#
+.SYNOPSIS
+    Retrieves role assignments for service principals in Azure subscriptions and exports the results to a CSV file.
+
+.DESCRIPTION
+    This script retrieves role assignments for service principals in Azure subscriptions and exports the results to a CSV file.
+    It excludes subscriptions with names containing 'Visual Studio', 'Gratis', and 'Tilgang til Azure Active Directory'.
+
+.PARAMETER None
+
+.EXAMPLE
+    Get-ServicePrincipals.ps1
+
+.NOTES
+    Author: Olav Tvedt
+    Date: 13/3/2024
+#>
+
 $Subs = Get-AzSubscription | Where-Object { $_.Name -NotMatch 'Visual Studio' -and $_.Name -NotMatch 'Free' }
 $servicePrincipals = Get-AzADServicePrincipal
 $AllSPs = $Subs | ForEach-Object {
