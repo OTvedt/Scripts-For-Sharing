@@ -1,4 +1,0 @@
-"AadClientId": "2ff9804e-cd7e-4fc2-9bb2-bc02d19a73e3",
-  "AadSecret": "~tD8Q~qXe6SWnI-b1uIodj-gWQCx8tVDI-Lsfa2z",
-  "AadTenantDomain": "SPVNO.onmicrosoft.com",
-  "AadTenantId": "417918a5-f594-44e0-ba27-23112940bde5",
