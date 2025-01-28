@@ -10,6 +10,7 @@ Connect-MgGraph -Scope "RoleEligibilitySchedule.ReadWrite.Directory", "RoleAssig
 $justification = "Automated activation via Microsoft Graph"
 $MgContext = Get-MgContext
 $User = Get-MgUSer -UserId $MgContext.account
+$myRoles = Get-MgRoleManagementDirectoryRoleEligibilitySchedule -ExpandProperty RoleDefinition -All -Filter "principalId eq '$($user.Id)'"
 
 # Get all Eligible assignments
 Write-Host "Getting all Eligible role assignments..."
