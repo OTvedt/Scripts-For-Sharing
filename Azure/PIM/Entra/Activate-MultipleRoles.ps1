@@ -34,15 +34,13 @@ foreach ($assignment in $eligibleAssignments) {
 }
 
 # Let user select length (default 8)
-Write-Host "`n"
-$h = Read-Host "For how many hour should the role(s) be activated?`n(Select between 1-8, empty = 8 hour)"
+$h = Read-Host "`nFor how many hour should the role(s) be activated?`n(Select between 1-8, empty = 8 hour)"
 if (-not $h -or $h -lt 1 -or $h -gt 8) {
     $h = 8
 }
-Write-Host "`n"
 
 # Show available roles and let the user select
-Write-Host "Select the roles you want to activate `n(type in number(s) seperated with comma):"
+Write-Host "`nSelect the roles you want to activate `n"
 $eligibleAssignments | ForEach-Object -Begin { $i = 0 } -Process {
     $i++
     $finnes = $false
@@ -65,7 +63,7 @@ $eligibleAssignments | ForEach-Object -Begin { $i = 0 } -Process {
 
 # Read the selection and convert it to a list of roles
 Write-Host "`n"
-$selectedIndexes = Read-Host "Select the roles you want to activate`n(type in number(s) seperated with comma)"
+$selectedIndexes = Read-Host "Type in number of the role.`nSeperated with comma if you will activate multiple roles"
 $selectedIndexes = $selectedIndexes -split "," | ForEach-Object { $_.Trim() -as [int] }
  
 # Hent de valgte rollene basert på brukerens valg
