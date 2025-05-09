@@ -1,16 +1,8 @@
-<#
-.DESCRIPTION
-    List all Eligible roles for the user and allow activation of multiple roles
-.AUTHOR
-    Olav Tvedt
-    https://www.youtube.com/@bluescreenbrothers
-#>
 Connect-MgGraph -Scope "RoleEligibilitySchedule.ReadWrite.Directory", "RoleAssignmentSchedule.ReadWrite.Directory" -NoWelcome
-
+ 
 $justification = "Automated activation via Microsoft Graph"
 $MgContext = Get-MgContext
-$User = Get-MgUSer -UserId $MgContext.account
-$myRoles = Get-MgRoleManagementDirectoryRoleEligibilitySchedule -ExpandProperty RoleDefinition -All -Filter "principalId eq '$($user.Id)'"
+$User = Get-MgUser -UserId $MgContext.account
 
 # Get all Eligible assignments
 Write-Host "Getting all Eligible role assignments..."
@@ -21,34 +13,62 @@ if (-not $eligibleAssignments) {
     return
 }
  
+# Getting assigned roles
+Write-Host "Getting already assigned roles..."
+$existingRoles = @{}
+foreach ($existing in $existingRoles) {
+        $existingRole= Get-MgRoleManagementDirectoryRoleAssignment -Filter "principalId eq '$($user.Id)'"
+        $existingRoles = $existingRole.RoleDefinitionId
+    }
+ 
+ 
 # Get roledefinitions based på RoleDefinitionId
 Write-Host "Getting detales for rolledefinisjons..."
 $roleDefinitions = @{}
+$roleDefinitionId = @{}
 foreach ($assignment in $eligibleAssignments) {
     if (-not $roleDefinitions.ContainsKey($assignment.RoleDefinitionId)) {
         $roleDefinition = Get-MgRoleManagementDirectoryRoleDefinition -UnifiedRoleDefinitionId $assignment.RoleDefinitionId
         $roleDefinitions[$assignment.Id] = $roleDefinition.DisplayName
     }
 }
-# Be brukeren om å angi varighet i timer (1-8), med standardverdi 8
+
+# Let user select length (default 8)
 Write-Host "`n"
-$h = Read-Host "For how many hour should the role(s) be activted?(Select between 1-8, empty = 8 hour)"
+$h = Read-Host "For how many hour should the role(s) be activated?`n(Select between 1-8, empty = 8 hour)"
 if (-not $h -or $h -lt 1 -or $h -gt 8) {
     $h = 8
 }
 Write-Host "`n"
- 
+
 # Show available roles and let the user select
-Write-Host "Select the roles you want to activate (type in number(s) seperated with comma):"
+Write-Host "Select the roles you want to activate `n(type in number(s) seperated with comma):"
 $eligibleAssignments | ForEach-Object -Begin { $i = 0 } -Process {
     $i++
-    $roleDisplayName = $roleDefinitions[$_.Id] ? $roleDefinitions[$_.Id] : "(Ukjent rolle navn)"
-    Write-Host "[$i] $roleDisplayName"
+    $finnes = $false
+    $roleDisplayName = $roleDefinitions[$_.Id] ? $roleDefinitions[$_.Id] : "(Unknown role name)"
+    foreach ($role in $existingRoles) {
+    #Write-Host "ExistingRoles: " $role
+    #Write-Host "eligibleAssignments: " $eligibleAssignments[$i-1].RoleDefinitionId
+        if ($existingRoles -eq $eligibleAssignments[$i-1].RoleDefinitionId) {
+            $finnes = $true
+        } else {
+            $finnes = $false
+      }
+    }
+    If ($finnes) {
+        Write-Host "[$i] $roleDisplayName" -ForegroundColor Green
+        } else {
+            Write-Host "[$i] $roleDisplayName" -ForegroundColor Blue
+         }
 }
 
 # Read the selection and convert it to a list of roles
-$selectedIndexes = Read-Host "Type a number (1-8) separate with comma"
+Write-Host "`n"
+$selectedIndexes = Read-Host "Select the roles you want to activate (type in number(s) seperated with comma):"
 $selectedIndexes = $selectedIndexes -split "," | ForEach-Object { $_.Trim() -as [int] }
+ 
+# Hent de valgte rollene basert på brukerens valg
 $roles = @()
 for ($i = 0; $i -lt $selectedIndexes.Length; $i++) {
     $index = $selectedIndexes[$i] - 1
@@ -56,10 +76,11 @@ for ($i = 0; $i -lt $selectedIndexes.Length; $i++) {
         $roles += $roleDefinitions[$eligibleAssignments[$index].Id]
     }
 }
-
+ 
 Write-Output "Activating Entra roles for: "$MgContext.Account""
-
+ 
 foreach ($role in $roles) {
+    $myRoles = Get-MgRoleManagementDirectoryRoleEligibilitySchedule -ExpandProperty RoleDefinition -All -Filter "principalId eq '$($user.Id)'"
     $myRoleName = $myroles | Select-Object -ExpandProperty RoleDefinition | Where-Object { $_.DisplayName -eq $role }
     $myRoleNameid = $myRoleName.Id
     $myRole = $myroles | Where-Object { $_.RoleDefinitionId -eq $myRoleNameid }
@@ -80,5 +101,5 @@ foreach ($role in $roles) {
     New-MgRoleManagementDirectoryRoleAssignmentScheduleRequest -BodyParameter $params
     Write-Output "Activated Entra role: "$role""
 }
-
-pause # To see the result after running the script
+ 
+pause
