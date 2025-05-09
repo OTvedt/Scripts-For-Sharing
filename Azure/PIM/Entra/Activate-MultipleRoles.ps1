@@ -30,6 +30,13 @@ foreach ($assignment in $eligibleAssignments) {
         $roleDefinitions[$assignment.Id] = $roleDefinition.DisplayName
     }
 }
+# Be brukeren om å angi varighet i timer (1-8), med standardverdi 8
+Write-Host "`n"
+$h = Read-Host "For how many hour should the role(s) be activted?(Select between 1-8, empty = 8 hour)"
+if (-not $h -or $h -lt 1 -or $h -gt 8) {
+    $h = 8
+}
+Write-Host "`n"
  
 # Show available roles and let the user select
 Write-Host "Select the roles you want to activate (type in number(s) seperated with comma):"
@@ -40,7 +47,7 @@ $eligibleAssignments | ForEach-Object -Begin { $i = 0 } -Process {
 }
 
 # Read the selection and convert it to a list of roles
-$selectedIndexes = Read-Host "Skriv inn tall separert med komma"
+$selectedIndexes = Read-Host "Type a number (1-8) separate with comma"
 $selectedIndexes = $selectedIndexes -split "," | ForEach-Object { $_.Trim() -as [int] }
 $roles = @()
 for ($i = 0; $i -lt $selectedIndexes.Length; $i++) {
@@ -66,7 +73,7 @@ foreach ($role in $roles) {
             StartDateTime = Get-Date
             Expiration    = @{
                 Type     = "AfterDuration"
-                Duration = "PT4H"
+                Duration = "PT${h}H"
             }
         }
     }
