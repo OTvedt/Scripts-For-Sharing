@@ -65,7 +65,7 @@ $eligibleAssignments | ForEach-Object -Begin { $i = 0 } -Process {
 
 # Read the selection and convert it to a list of roles
 Write-Host "`n"
-$selectedIndexes = Read-Host "Select the roles you want to activate (type in number(s) seperated with comma):"
+$selectedIndexes = Read-Host "Select the roles you want to activate`n(type in number(s) seperated with comma)"
 $selectedIndexes = $selectedIndexes -split "," | ForEach-Object { $_.Trim() -as [int] }
  
 # Hent de valgte rollene basert på brukerens valg
