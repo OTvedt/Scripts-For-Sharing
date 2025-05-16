@@ -1,0 +1,14 @@
+<Configuration>
+<VGpu>Enable</VGpu>
+<Networking>Enable</Networking>
+<MappedFolders>
+    <MappedFolder>
+        <HostFolder>C:\Demo</HostFolder>
+		<ReadOnly>false</ReadOnly>
+	</MappedFolder>
+</MappedFolders>
+<LogonCommand>
+    <Command>powershell -Command Set-DnsClientServerAddress -InterfaceAlias "Ethernet" -ServerAddresses "8.8.8.8"
+</Command>
+</LogonCommand>
+</Configuration>
