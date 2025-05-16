@@ -1,0 +1,14 @@
+<Configuration>
+<VGpu>Disable</VGpu>
+<Networking>Enable</Networking>
+<MappedFolders>
+    <MappedFolder>
+        <HostFolder>C:\Demo</HostFolder>
+		<ReadOnly>false</ReadOnly>
+	</MappedFolder>
+</MappedFolders>
+<LogonCommand>
+    <Command>netsh interface ipv4 set dnsservers name="ethernet" static 8.8.8.8 primary
+</Command>
+</LogonCommand>
+</Configuration>
