@@ -1,4 +1,4 @@
-Connect-MgGraph -Scope "RoleEligibilitySchedule.ReadWrite.Directory", "RoleAssignmentSchedule.ReadWrite.Directory" -NoWelcome
+Connect-MgGraph -Scope "RoleEligibilitySchedule.ReadWrite.Directory", "RoleAssignmentSchedule.ReadWrite.Directory", "RoleManagement.Read.Directory" -NoWelcome
  
 $justification = "Automated activation via Microsoft Graph"
 $MgContext = Get-MgContext
