@@ -35,9 +35,9 @@
         4. Already expired certificates
 
 .NOTES
-    Version:        1.0
-    Author:         Unknown
-    Creation Date:  Unknown
+    Version:        2.0
+    Author:         Olav Tvedt
+    Creation Date:  17.09.2025
     Purpose/Change: Initial script development
 
 .EXAMPLE
