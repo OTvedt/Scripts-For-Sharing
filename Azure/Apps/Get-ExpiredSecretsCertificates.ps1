@@ -2,7 +2,7 @@
 .SYNOPSIS
     Monitors and reports Entra ID (Azure AD) application secrets and certificates that are expired or approaching expiration.
     Have been setup to run with GITHUB Actions
-
+    Version 2.0 (including SAML certificates)
 .DESCRIPTION
     This script connects to Microsoft Graph and retrieves all applications to check their credentials status.
     It identifies:
@@ -41,7 +41,7 @@
     Purpose/Change: Initial script development
 
 .EXAMPLE
-    .\ExpiredApps.ps1
+    .\Get-ExpiredSecretsCertificates.ps1
 
 #>
 # App registration krav for å kunne kjøre dette scriptet: Application.Read.All og Directory.Read.All
@@ -58,6 +58,8 @@ $expiredSecrets = New-Object System.Collections.ArrayList
 $expiringSecrets = New-Object System.Collections.ArrayList
 $expiredCertificates = New-Object System.Collections.ArrayList
 $expiringCertificates = New-Object System.Collections.ArrayList
+$expiringSAMLCerts  = New-Object System.Collections.ArrayList
+$expiredSAMLCerts= New-Object System.Collections.ArrayList 
  
 # Get all applications
 $applications = Get-MgApplication -All | sort "DisplayName"
@@ -113,7 +115,30 @@ foreach ($app in $applications) {
         }
     }
 }
- 
+# SAML Certificates
+foreach ($app in $SAMLapps ) {
+    if ($app.PasswordCredentials -and $app.PasswordCredentials.Count -gt 0) {
+        foreach ($cred in $app.PasswordCredentials) {
+            if ($cred.EndDateTime -lt (Get-Date)) {
+                $expiredSAMLCerts+= [PSCustomObject]@{
+                    AppName     = $app.DisplayName
+                    AppId       = $app.AppId
+                    ObjectId    = $app.Id
+                    CertId      = $cred.KeyId 
+                    Expires     = $cred.EndDateTime
+                }
+            } elseif ($cred.EndDateTime -lt $futureDate) {
+                $expiringSAMLCerts  += [PSCustomObject]@{
+                    AppName     = $app.DisplayName
+                    AppId       = $app.AppId
+                    ObjectId    = $app.Id
+                    CertID      = $cred.KeyId 
+                    EndDate     = $cred.EndDateTime
+                }
+            }
+        }
+    }
+}
 # Generate HTML body for the email
 $htmlBody = @"
 <html>
@@ -135,7 +160,6 @@ $htmlBody = @"
         <th>End Date</th>
     </tr>
 "@
- 
 foreach ($secret in $expiringSecrets) {
     $htmlBody += "<tr>"
     $htmlBody += "<td><b>$($secret.AppName)</b></td>"
@@ -144,7 +168,6 @@ foreach ($secret in $expiringSecrets) {
     $htmlBody += "<td><b>$($secret.EndDate)</b></td>"
     $htmlBody += "</tr>"
 }
- 
 $htmlBody += @"
 </table>
 <h3>Secret Already Expired</h3>
@@ -156,7 +179,6 @@ $htmlBody += @"
         <th>End Date</th>
     </tr>
 "@
- 
 foreach ($secret in $expiredSecrets) {
     $htmlBody += "<tr>"
     $htmlBody += "<td>$($secret.AppName)</td>"
@@ -165,9 +187,7 @@ foreach ($secret in $expiredSecrets) {
     $htmlBody += "<td>$($secret.EndDate)</td>"
     $htmlBody += "</tr>"
 }
- 
 $htmlBody += @"
- 
 </table>
 <h3>Cert expiring in the Next 30 Days</h3>
 <table>
@@ -178,7 +198,6 @@ $htmlBody += @"
         <th>End Date</th>
     </tr>
 "@
- 
 foreach ($secret in $expiringCertificates) {
     $htmlBody += "<tr>"
     $htmlBody += "<td><b>$($secret.AppName)</b></td>"
@@ -187,9 +206,7 @@ foreach ($secret in $expiringCertificates) {
     $htmlBody += "<td><b>$($secret.EndDate)</b></td>"
     $htmlBody += "</tr>"
 }
- 
 $htmlBody += @"
- 
 </table>
 <h3>Cert already Expired</h3>
 <table>
@@ -200,7 +217,6 @@ $htmlBody += @"
         <th>End Date</th>
     </tr>
 "@
- 
 foreach ($secret in $expiredCertificates) {
     $htmlBody += "<tr>"
     $htmlBody += "<td>$($secret.AppName)</td>"
@@ -209,9 +225,56 @@ foreach ($secret in $expiredCertificates) {
     $htmlBody += "<td>$($secret.EndDate)</td>"
     $htmlBody += "</tr>"
 }
- 
 $htmlBody += @"
- 
+</table>
+<br>
+<h3>SAML Cert expiring in the Next 30 Days</h3>
+<table>
+    <tr>
+        <th>App Name</th>
+        <th>App ID</th>
+        <th>Object ID</th>
+        <th>Secret ID</th>
+        <th>End Date</th>
+    </tr>
+"@
+foreach ($secret in $expiringSAMLCerts) {
+    $htmlBody += "<tr>"
+    $htmlBody += "<td><b>$($secret.AppName)</b></td>"
+    $htmlBody += "<td><b>$($secret.AppId)</b></td>"
+    $htmlBody += "<td><b>$($secret.CertID)</b></td>"
+    $htmlBody += "<td><b>$($secret.ObjectId)</b></td>"
+    $htmlBody += "<td><b>$($secret.EndDate)</b></td>"
+    $htmlBody += "</tr>"
+}
+$htmlBody += @"
+</table>
+</body>
+</html>
+"@
+$htmlBody += @"
+</table>
+<br>
+<h3>SAML Cert already Expired</h3>
+<table>
+    <tr>
+        <th>App Name</th>
+        <th>App ID</th>
+        <th>Secret ID</th>
+        <th>Object ID</th>
+        <th>End Date</th>
+    </tr>
+"@
+foreach ($secret in $expiredSAMLCerts) {
+    $htmlBody += "<tr>"
+    $htmlBody += "<td>$($secret.AppName)</td>"
+    $htmlBody += "<td>$($secret.AppId)</td>"
+    $htmlBody += "<td>$($secret.ObjectId)</td>"
+    $htmlBody += "<td>$($secret.CertID)</td>"
+    $htmlBody += "<td>$($secret.Expires)</td>"
+    $htmlBody += "</tr>"
+}
+$htmlBody += @"
 </table>
 </body>
 </html>
