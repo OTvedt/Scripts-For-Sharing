@@ -1,3 +1,5 @@
+!!! In september 2025 Powershell commands stopped working, but the netsh version are working. You can not change DNS manual anymore either!!!
+
 Setting custom DNS settings when starting Windows Sandbox to prevent no network issues.   
 One example using PowerShell and one using Netsh command  
 
