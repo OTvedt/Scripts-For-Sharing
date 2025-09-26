@@ -15,8 +15,6 @@ try {
     throw
 }
 
-$excludeOwnerId = '9db48734-403f-49ed-a27b-1d4a2d69b8ab'
-
 # Define lists to hold results
 $expiredSecrets = New-Object System.Collections.ArrayList
 $expiringSecrets = New-Object System.Collections.ArrayList
@@ -39,7 +37,7 @@ $applications = Get-MgApplication -All | Where-Object {
 } | Sort-Object DisplayName
 
 # Get all Enterprise Apps (Service Principals)
-$SAMLapps = Get-MgServicePrincipal -All | Where-Object { $_.DisplayName -ne "p2p Server" } | Sort-Object DisplayName
+$SAMLapps = Get-MgServicePrincipal -All | Sort-Object DisplayName # To exclude some apps use this as example | Where-Object { $_.DisplayName -ne "p2p Server" } 
 
 # Dates
 $currentDate = Get-Date
