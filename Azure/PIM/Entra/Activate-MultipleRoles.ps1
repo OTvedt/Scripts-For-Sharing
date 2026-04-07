@@ -13,28 +13,23 @@ if (-not $eligibleAssignments) {
     return
 }
  
-# Getting assigned roles
-Write-Host "Getting already assigned roles..."
-$existingRoles = @{}
-foreach ($existing in $existingRoles) {
-        $existingRole= Get-MgRoleManagementDirectoryRoleAssignment -Filter "principalId eq '$($user.Id)'"
-        $existingRoles = $existingRole.RoleDefinitionId
-    }
- 
- 
-# Get roledefinitions based på RoleDefinitionId
-Write-Host "Getting detales for rolledefinisjons..."
+# Get already active role assignments
+Write-Host "Getting already active roles..."
+$activeAssignments = Get-MgRoleManagementDirectoryRoleAssignment -Filter "principalId eq '$($user.Id)'"
+$existingRoles = $activeAssignments | Select-Object -ExpandProperty RoleDefinitionId
+
+# Get role definitions based on RoleDefinitionId
+Write-Host "Getting role definition details..."
 $roleDefinitions = @{}
-$roleDefinitionId = @{}
 foreach ($assignment in $eligibleAssignments) {
     if (-not $roleDefinitions.ContainsKey($assignment.RoleDefinitionId)) {
         $roleDefinition = Get-MgRoleManagementDirectoryRoleDefinition -UnifiedRoleDefinitionId $assignment.RoleDefinitionId
-        $roleDefinitions[$assignment.Id] = $roleDefinition.DisplayName
+        $roleDefinitions[$assignment.RoleDefinitionId] = $roleDefinition.DisplayName
     }
 }
 
-# Let user select length (default 8)
-$h = Read-Host "`nFor how many hour should the role(s) be activated?`n(Select between 1-8, empty = 8 hour)"
+# Let user select duration (default 8)
+$h = Read-Host "`nFor how many hours should the role(s) be activated?`n(Select between 1-8, empty = 8 hours)"
 if (-not $h -or $h -lt 1 -or $h -gt 8) {
     $h = 8
 }
@@ -43,17 +38,12 @@ if (-not $h -or $h -lt 1 -or $h -gt 8) {
 Write-Host "`nSelect the roles you want to activate `n"
 $eligibleAssignments | ForEach-Object -Begin { $i = 0 } -Process {
     $i++
-    $finnes = $false
-    $roleDisplayName = $roleDefinitions[$_.Id] ? $roleDefinitions[$_.Id] : "(Unknown role name)"
-    foreach ($role in $existingRoles) {
-    #Write-Host "ExistingRoles: " $role
-    #Write-Host "eligibleAssignments: " $eligibleAssignments[$i-1].RoleDefinitionId
-        if ($existingRoles -eq $eligibleAssignments[$i-1].RoleDefinitionId) {
-            $finnes = $true
-        } else {
-            $finnes = $false
-      }
+    if ($roleDefinitions.ContainsKey($_.RoleDefinitionId)) {
+        $roleDisplayName = $roleDefinitions[$_.RoleDefinitionId]
+    } else {
+        $roleDisplayName = "(Unknown role name)"
     }
+    $finnes = $existingRoles -contains $_.RoleDefinitionId
     If ($finnes) {
         Write-Host "[$i] $roleDisplayName" -ForegroundColor Green
         } else {
@@ -63,7 +53,7 @@ $eligibleAssignments | ForEach-Object -Begin { $i = 0 } -Process {
 
 # Read the selection and convert it to a list of roles
 Write-Host "`n"
-$selectedIndexes = Read-Host "Type in number of the role.`nSeperated with comma if you will activate multiple roles"
+$selectedIndexes = Read-Host "Type in the number of the role.`nSeparate with comma to activate multiple roles"
 $selectedIndexes = $selectedIndexes -split "," | ForEach-Object { $_.Trim() -as [int] }
  
 # Hent de valgte rollene basert på brukerens valg
@@ -71,11 +61,11 @@ $roles = @()
 for ($i = 0; $i -lt $selectedIndexes.Length; $i++) {
     $index = $selectedIndexes[$i] - 1
     if ($index -ge 0 -and $index -lt $eligibleAssignments.Count) {
-        $roles += $roleDefinitions[$eligibleAssignments[$index].Id]
+        $roles += $roleDefinitions[$eligibleAssignments[$index].RoleDefinitionId]
     }
 }
  
-Write-Output "Activating Entra roles for: "$MgContext.Account""
+Write-Output "Activating Entra roles for: $($MgContext.Account)"
  
 foreach ($role in $roles) {
     $myRoles = Get-MgRoleManagementDirectoryRoleEligibilitySchedule -ExpandProperty RoleDefinition -All -Filter "principalId eq '$($user.Id)'"
@@ -97,7 +87,7 @@ foreach ($role in $roles) {
         }
     }
     New-MgRoleManagementDirectoryRoleAssignmentScheduleRequest -BodyParameter $params
-    Write-Output "Activated Entra role: "$role""
+    Write-Output "Activated Entra role: $role"
 }
  
 pause
