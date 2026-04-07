@@ -38,7 +38,11 @@ if (-not $h -or $h -lt 1 -or $h -gt 8) {
 Write-Host "`nSelect the roles you want to activate `n"
 $eligibleAssignments | ForEach-Object -Begin { $i = 0 } -Process {
     $i++
-    $roleDisplayName = $roleDefinitions[$_.RoleDefinitionId] ?? "(Unknown role name)"
+    if ($roleDefinitions.ContainsKey($_.RoleDefinitionId)) {
+        $roleDisplayName = $roleDefinitions[$_.RoleDefinitionId]
+    } else {
+        $roleDisplayName = "(Unknown role name)"
+    }
     $finnes = $existingRoles -contains $_.RoleDefinitionId
     If ($finnes) {
         Write-Host "[$i] $roleDisplayName" -ForegroundColor Green
