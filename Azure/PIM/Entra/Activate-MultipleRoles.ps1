@@ -5,7 +5,10 @@ param(
     [int]$Hours = 8,
 
     [Parameter()]
-    [string]$Justification = "Automated activation via Microsoft Graph"
+    [string]$Justification = "Automated activation via Microsoft Graph",
+
+    [Parameter()]
+    [string[]]$RoleNames
 )
 
 $scopes = @(
@@ -24,7 +27,11 @@ function Get-ScopeDisplayName {
         return 'Directory'
     }
 
-    return $DirectoryScopeId
+    if ($DirectoryScopeId.Length -le 40) {
+        return $DirectoryScopeId
+    }
+
+    return ('{0}...' -f $DirectoryScopeId.Substring(0, 37))
 }
 
 try {
@@ -58,18 +65,7 @@ try {
         }
     }
 
-    if (-not $PSBoundParameters.ContainsKey('Hours')) {
-        $inputHours = Read-Host "`nFor how many hours should the role(s) be activated?`n(Select between 1-8, empty = 8 hours)"
-        if ($inputHours) {
-            if ($inputHours -notmatch '^\d+$' -or [int]$inputHours -lt 1 -or [int]$inputHours -gt 8) {
-                throw "Hours must be a whole number between 1 and 8."
-            }
-            $Hours = [int]$inputHours
-        }
-    }
-
-    $menu = for ($i = 0; $i -lt $eligibleAssignments.Count; $i++) {
-        $assignment = $eligibleAssignments[$i]
+    $menu = foreach ($assignment in $eligibleAssignments) {
         $scopeDisplayName = Get-ScopeDisplayName -DirectoryScopeId $assignment.DirectoryScopeId
 
         [pscustomobject]@{
@@ -79,41 +75,80 @@ try {
             ScopeDisplayName = $scopeDisplayName
             IsActive         = $existingRoleIds -contains $assignment.RoleDefinitionId
         }
-    } | Sort-Object DisplayName, ScopeDisplayName
+    } | Sort-Object IsActive, DisplayName, ScopeDisplayName
 
     for ($i = 0; $i -lt $menu.Count; $i++) {
         $menu[$i] | Add-Member -NotePropertyName Index -NotePropertyValue ($i + 1)
     }
 
-    Write-Host "`nSelect the roles you want to activate:`n"
-    foreach ($item in $menu) {
-        $color = if ($item.IsActive) { 'Green' } else { 'Blue' }
-        Write-Host "[$($item.Index)] $($item.DisplayName) [$($item.ScopeDisplayName)]" -ForegroundColor $color
-    }
+    if ($PSBoundParameters.ContainsKey('RoleNames')) {
+        $selectedRoles = foreach ($roleName in $RoleNames) {
+            $matchingRoles = @($menu | Where-Object { $_.DisplayName -eq $roleName })
 
-    Write-Host ""
-    $selection = Read-Host "Type in the number of the role.`nSeparate with comma to activate multiple roles"
-    if (-not $selection) {
-        throw "No roles were selected."
-    }
-
-    $selectedIndexes = $selection -split ',' |
-        ForEach-Object { $_.Trim() } |
-        Where-Object { $_ } |
-        ForEach-Object {
-            if ($_ -notmatch '^\d+$') {
-                throw "Invalid selection: '$_'"
+            if (-not $matchingRoles) {
+                throw "Role not found among eligible assignments: $roleName"
             }
-            [int]$_
-        } |
-        Select-Object -Unique
 
-    $selectedRoles = foreach ($index in $selectedIndexes) {
-        $item = $menu | Where-Object { $_.Index -eq $index }
-        if (-not $item) {
-            throw "Selection out of range: $index"
+            foreach ($matchingRole in $matchingRoles) {
+                $matchingRole
+            }
+        } | Sort-Object DisplayName, ScopeDisplayName -Unique
+    }
+    else {
+        if (-not $PSBoundParameters.ContainsKey('Hours')) {
+            $inputHours = Read-Host "`nFor how many hours should the role(s) be activated?`n(Select between 1-8, empty = 8 hours)"
+            if ($inputHours) {
+                if ($inputHours -notmatch '^\d+$' -or [int]$inputHours -lt 1 -or [int]$inputHours -gt 8) {
+                    throw "Hours must be a whole number between 1 and 8."
+                }
+                $Hours = [int]$inputHours
+            }
         }
-        $item
+
+        $inactiveRoles = @($menu | Where-Object { -not $_.IsActive })
+        $activeRoles = @($menu | Where-Object { $_.IsActive })
+
+        Write-Host "`nSelect the roles you want to activate:`n"
+
+        if ($inactiveRoles.Count -gt 0) {
+            Write-Host "Inactive eligible roles:" -ForegroundColor Cyan
+            foreach ($item in $inactiveRoles) {
+                Write-Host "[$($item.Index)] $($item.DisplayName) [$($item.ScopeDisplayName)]" -ForegroundColor Blue
+            }
+            Write-Host ""
+        }
+
+        if ($activeRoles.Count -gt 0) {
+            Write-Host "Already active roles:" -ForegroundColor Cyan
+            foreach ($item in $activeRoles) {
+                Write-Host "[$($item.Index)] $($item.DisplayName) [$($item.ScopeDisplayName)]" -ForegroundColor Green
+            }
+            Write-Host ""
+        }
+
+        $selection = Read-Host "Type in the number of the role.`nSeparate with comma to activate multiple roles"
+        if (-not $selection) {
+            throw "No roles were selected."
+        }
+
+        $selectedIndexes = $selection -split ',' |
+            ForEach-Object { $_.Trim() } |
+            Where-Object { $_ } |
+            ForEach-Object {
+                if ($_ -notmatch '^\d+$') {
+                    throw "Invalid selection: '$_'"
+                }
+                [int]$_
+            } |
+            Select-Object -Unique
+
+        $selectedRoles = foreach ($index in $selectedIndexes) {
+            $item = $menu | Where-Object { $_.Index -eq $index }
+            if (-not $item) {
+                throw "Selection out of range: $index"
+            }
+            $item
+        }
     }
 
     Write-Output "Activating Entra roles for: $($mgContext.Account)"
