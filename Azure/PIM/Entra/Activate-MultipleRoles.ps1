@@ -14,6 +14,19 @@ $scopes = @(
     "RoleManagement.Read.Directory"
 )
 
+function Get-ScopeDisplayName {
+    param(
+        [Parameter()]
+        [string]$DirectoryScopeId
+    )
+
+    if ([string]::IsNullOrWhiteSpace($DirectoryScopeId) -or $DirectoryScopeId -eq '/') {
+        return 'Directory'
+    }
+
+    return $DirectoryScopeId
+}
+
 try {
     Connect-MgGraph -Scope $scopes -NoWelcome -ErrorAction Stop
     $mgContext = Get-MgContext
@@ -57,19 +70,25 @@ try {
 
     $menu = for ($i = 0; $i -lt $eligibleAssignments.Count; $i++) {
         $assignment = $eligibleAssignments[$i]
+        $scopeDisplayName = Get-ScopeDisplayName -DirectoryScopeId $assignment.DirectoryScopeId
+
         [pscustomobject]@{
-            Index            = $i + 1
             DisplayName      = if ($roleDefinitions.ContainsKey($assignment.RoleDefinitionId)) { $roleDefinitions[$assignment.RoleDefinitionId] } else { '(Unknown role name)' }
             RoleDefinitionId = $assignment.RoleDefinitionId
             DirectoryScopeId = $assignment.DirectoryScopeId
+            ScopeDisplayName = $scopeDisplayName
             IsActive         = $existingRoleIds -contains $assignment.RoleDefinitionId
         }
+    } | Sort-Object DisplayName, ScopeDisplayName
+
+    for ($i = 0; $i -lt $menu.Count; $i++) {
+        $menu[$i] | Add-Member -NotePropertyName Index -NotePropertyValue ($i + 1)
     }
 
     Write-Host "`nSelect the roles you want to activate:`n"
     foreach ($item in $menu) {
         $color = if ($item.IsActive) { 'Green' } else { 'Blue' }
-        Write-Host "[$($item.Index)] $($item.DisplayName)" -ForegroundColor $color
+        Write-Host "[$($item.Index)] $($item.DisplayName) [$($item.ScopeDisplayName)]" -ForegroundColor $color
     }
 
     Write-Host ""
@@ -101,7 +120,7 @@ try {
 
     foreach ($role in $selectedRoles) {
         if ($role.IsActive) {
-            Write-Warning "Skipping already active role: $($role.DisplayName)"
+            Write-Warning "Skipping already active role: $($role.DisplayName) [$($role.ScopeDisplayName)]"
             continue
         }
 
@@ -125,6 +144,7 @@ try {
         [pscustomobject]@{
             User        = $mgContext.Account
             Role        = $role.DisplayName
+            Scope       = $role.ScopeDisplayName
             Hours       = $Hours
             Status      = 'Activated'
             ActivatedAt = Get-Date
