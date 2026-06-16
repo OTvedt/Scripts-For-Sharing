@@ -11,6 +11,32 @@ param(
     [string[]]$RoleNames
 )
 
+$requiredModules = @(
+    'Microsoft.Graph.Authentication'
+    'Microsoft.Graph.Users'
+    'Microsoft.Graph.Identity.Governance'
+)
+
+$missingModules = foreach ($moduleName in $requiredModules) {
+    if (-not (Get-Module -ListAvailable -Name $moduleName)) {
+        $moduleName
+    }
+}
+
+if ($missingModules) {
+    $moduleList = $missingModules -join ', '
+    $installPrompt = Read-Host "The following required module(s) are not installed: $moduleList. Install now? (Y/N)"
+
+    if ($installPrompt -match '^(?i)y(?:es)?$') {
+        foreach ($moduleName in $missingModules) {
+            Install-Module -Name $moduleName -Scope CurrentUser -Force -AllowClobber -ErrorAction Stop
+        }
+    }
+    else {
+        throw "Required module(s) not installed: $moduleList"
+    }
+}
+
 $scopes = @(
     "RoleEligibilitySchedule.ReadWrite.Directory"
     "RoleAssignmentSchedule.ReadWrite.Directory"
