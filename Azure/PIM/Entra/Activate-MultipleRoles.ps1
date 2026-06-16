@@ -25,15 +25,10 @@ $missingModules = foreach ($moduleName in $requiredModules) {
 
 if ($missingModules) {
     $moduleList = $missingModules -join ', '
-    $installPrompt = Read-Host "The following required module(s) are not installed: $moduleList. Install now? (Y/N)"
+    Write-Host "Installing required module(s): $moduleList" -ForegroundColor Yellow
 
-    if ($installPrompt -match '^(?i)y(?:es)?$') {
-        foreach ($moduleName in $missingModules) {
-            Install-Module -Name $moduleName -Scope CurrentUser -Force -AllowClobber -ErrorAction Stop
-        }
-    }
-    else {
-        throw "Required module(s) not installed: $moduleList"
+    foreach ($moduleName in $missingModules) {
+        Install-Module -Name $moduleName -Scope CurrentUser -Force -AllowClobber -ErrorAction Stop
     }
 }
 
